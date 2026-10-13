@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Data layanan dibaca pengunjung, tetapi hanya akun admin yang ditentukan boleh mengubahnya.
+    match /services/{serviceId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null
+        && request.auth.token.email == 'GANTI_DENGAN_EMAIL_ADMIN_ANDA';
+    }
+    // Website publik perlu membaca pengaturan maintenance dan nomor WhatsApp.
+    match /site/{documentId} {
+      allow read: if documentId == 'settings';
+      allow create, update, delete: if request.auth != null
+        && request.auth.token.email == 'GANTI_DENGAN_EMAIL_ADMIN_ANDA';
+    }
+    // Default deny untuk koleksi lain.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
